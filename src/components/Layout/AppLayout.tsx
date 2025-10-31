@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useChatStore } from '@/store/chatStore';
-import { useFolders } from '@/hooks/useFolders';
 import { useAuth } from '@/hooks/useAuth';
 import LeftSidebar from './LeftSidebar';
 import FloatingClasseur from '../Navigation/FloatingClasseur';
@@ -20,24 +19,10 @@ import SettingsSection from '../Sections/SettingsSection';
 
 const AppLayout: React.FC = () => {
   const [activeSection, setActiveSection] = React.useState('chat');
-  const { activeConversationId, activeFolderId, setActiveFolderId } = useChatStore();
-  const { folders } = useFolders();
+  const { activeConversationId, activeFolderId, setActiveFolderId, folders } = useChatStore();
   const { signOut } = useAuth();
 
   const activeFolder = activeFolderId ? folders.find(f => f.id === activeFolderId) : null;
-  
-  // Convert Supabase folder to store folder type
-  const storeFolderFromSupabase = activeFolder ? {
-    id: activeFolder.id,
-    name: activeFolder.name,
-    description: activeFolder.description || undefined,
-    color: activeFolder.color,
-    createdAt: new Date(activeFolder.created_at).getTime(),
-    attachments: [],
-    timeline: [],
-    documents: [],
-    deadlines: []
-  } : null;
 
   const renderActiveSection = () => {
     switch (activeSection) {
@@ -46,10 +31,10 @@ const AppLayout: React.FC = () => {
           <div className="flex h-full">
             <LeftSidebar />
             <main className="flex-1 overflow-hidden">
-              {storeFolderFromSupabase ? (
-                <FolderDetailView 
-                  folder={storeFolderFromSupabase} 
-                  onBack={() => setActiveFolderId(null)} 
+              {activeFolder ? (
+                <FolderDetailView
+                  folder={activeFolder}
+                  onBack={() => setActiveFolderId(null)}
                 />
               ) : (
                 <ChatSection />

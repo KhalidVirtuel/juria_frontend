@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
-import { Message } from '@/hooks/useConversations';
 import { Button } from '@/components/ui/button';
-import { Send, Plus } from 'lucide-react';
+import { Send } from 'lucide-react';
+import type { Message } from '@/store/types';
 
 interface ChatContainerProps {
   messages: Message[];

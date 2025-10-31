@@ -7,9 +7,6 @@ import { createConversationActions } from './conversationActions';
 import { createFolderActions } from './folderActions';
 import { createFolderEnhancedActions } from './folderEnhancedActions';
 
-// Export the AI simulation function
-export { simulateAIResponse } from './aiSimulation';
-
 // Export types
 export type { Message, Conversation, Folder } from './types';
 

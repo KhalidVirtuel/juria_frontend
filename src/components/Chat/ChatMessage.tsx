@@ -1,12 +1,12 @@
 import React from 'react';
-import { Message } from '@/hooks/useConversations';
+import type { Message } from '@/store/types';
 
 interface ChatMessageProps {
   message: Message;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-  const formatTime = (timestamp: string) => {
+  const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit'
@@ -27,7 +27,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           </p>
         </div>
         <div className={`text-xs opacity-60 mt-2 font-medium text-muted-foreground ${isUser ? 'text-right' : 'text-left'}`}>
-          {formatTime(message.created_at)}
+          {formatTime(message.timestamp)}
         </div>
       </div>
     </div>

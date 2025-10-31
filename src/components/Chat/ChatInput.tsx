@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useChatStore, simulateAIResponse } from '@/store/chatStore';
+import { useChatStore } from '@/store/chatStore';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Plus } from 'lucide-react';
@@ -33,18 +33,15 @@ const ChatInput: React.FC<ChatInputProps> = ({ conversationId }) => {
     
     if (!message.trim()) return;
     
-    // Envoyer le message de l'utilisateur
-    await addMessage(conversationId, 'user', message.trim());
-    setMessage('');
-    
-    // Simuler la réponse de l'IA
+    const content = message.trim();
+
     setIsTyping(true);
-    
+
     try {
-      const aiResponse = await simulateAIResponse(message);
-      await addMessage(conversationId, 'assistant', aiResponse);
+      await addMessage(conversationId, 'user', content);
+      setMessage('');
     } catch (error) {
-      console.error('Error generating AI response:', error);
+      console.error('Error sending message:', error);
     } finally {
       setIsTyping(false);
     }

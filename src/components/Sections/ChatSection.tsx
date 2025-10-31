@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Plus, Scale, Users, Calendar, Send, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ const ChatSection: React.FC = () => {
     addMessage,
     createConversation,
     isTyping,
+    setIsTyping,
   } = useChatStore();
 
   // Get current conversation and its messages
@@ -35,6 +36,8 @@ const ChatSection: React.FC = () => {
   const handleStartNewChat = async () => {
     const messageToSend = message.trim();
     if (!messageToSend) return;
+
+    setIsTyping(true);
 
     try {
       // Clear folder view to show chat
@@ -57,6 +60,8 @@ const ChatSection: React.FC = () => {
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast.error(error.response?.data?.error || 'Erreur lors de l\'envoi du message');
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -67,13 +72,7 @@ const ChatSection: React.FC = () => {
       {hasMessages && currentConversation ? (
         <div className="animate-fade-in">
           <ChatContainer
-            messages={messages.map((m) => ({
-              id: m.id,
-              conversation_id: currentConversation.id,
-              role: m.role === 'USER' ? 'user' : 'assistant',
-              content: m.content,
-              created_at: new Date(m.timestamp).toISOString(),
-            }))}
+            messages={messages}
             isTyping={isTyping}
             onSendMessage={handleStartNewChat}
             inputValue={message}
