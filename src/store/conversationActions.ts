@@ -1,5 +1,4 @@
-
-import { ChatState } from './types';
+import { ChatState, ActiveWorkflow } from './types';
 import { toast } from '@/hooks/use-toast';
 import { chatAPI } from '@/lib/api';
 
@@ -58,6 +57,45 @@ export const createConversationActions = (set: any, get: any) => ({
         description: error.response?.data?.error || "Une erreur est survenue lors de l'envoi du message.",
         variant: "destructive"
       });
+    }
+  },
+
+  // ✅ NOUVELLE MÉTHODE : Recharger une conversation spécifique
+  loadConversation: async (conversationId: string): Promise<void> => {
+    try {
+      const response = await chatAPI.getConversation(conversationId);
+      const updatedConv = response.conversation;
+      
+      // Transformer les messages backend vers le format store
+      const messages = (updatedConv.messages || []).map((msg: any) => ({
+        id: msg.id,
+        content: msg.content,
+        role: msg.role.toLowerCase() as 'user' | 'assistant',
+        timestamp: toTimestamp(msg.createdAt),
+      }));
+
+      // Mettre à jour la conversation dans le store
+      set((state: ChatState) => ({
+        conversations: state.conversations.map((convo) => {
+          if (convo.id === conversationId) {
+            return {
+              ...convo,
+              title: updatedConv.title,
+              messages,
+              lastUpdated: toTimestamp(updatedConv.updatedAt),
+            };
+          }
+          return convo;
+        }),
+      }));
+    } catch (error: any) {
+      console.error('Error loading conversation:', error);
+      toast({
+        title: "Erreur",
+        description: error.response?.data?.error || "Une erreur est survenue lors du chargement de la conversation.",
+        variant: "destructive"
+      });
+      throw error;
     }
   },
 
@@ -190,4 +228,62 @@ export const createConversationActions = (set: any, get: any) => ({
       });
     }
   },
+});
+
+export const createWorkflowActions = (set: any, get: any) => ({
+  // ✅ Active un workflow
+  activateWorkflow: (conversationId: string, workflowId: string) => {
+    const conversations = get().conversations;
+    const conversation = conversations.find((c: any) => c.id === conversationId);
+    
+    if (!conversation) {
+      console.warn('Conversation not found:', conversationId);
+      return;
+    }
+    
+    const workflows = conversation.workflows || [];
+    const workflowExists = workflows.some((w: any) => w.id === workflowId);
+    
+    if (workflowExists) {
+      console.log('Workflow already active:', workflowId);
+      return;
+    }
+    
+    const updatedConversation = {
+      ...conversation,
+      workflows: [...workflows, { id: workflowId, activatedAt: new Date().toISOString() }]
+    };
+    
+    set({
+      conversations: conversations.map((c: any) => 
+        c.id === conversationId ? updatedConversation : c
+      )
+    });
+    
+    console.log('✅ Workflow activated:', workflowId);
+  },
+  
+  // ✅ Désactive un workflow
+  deactivateWorkflow: (conversationId: string, workflowId: string) => {
+    const conversations = get().conversations;
+    const conversation = conversations.find((c: any) => c.id === conversationId);
+    
+    if (!conversation) {
+      console.warn('Conversation not found:', conversationId);
+      return;
+    }
+    
+    const updatedConversation = {
+      ...conversation,
+      workflows: conversation.workflows?.filter((w: any) => w.id !== workflowId) || []
+    };
+    
+    set({
+      conversations: conversations.map((c: any) => 
+        c.id === conversationId ? updatedConversation : c
+      )
+    });
+    
+    console.log('✅ Workflow deactivated:', workflowId);
+  }
 });

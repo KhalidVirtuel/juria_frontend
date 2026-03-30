@@ -88,7 +88,11 @@ export default {
 					dark: 'rgba(255, 255, 255, 0.5)',
 					chrome: 'hsla(var(--primary-glass))',
 					metal: 'hsla(var(--surface-metal))'
-				}
+				},
+
+
+				'mezin-ciel': '#0187DA',
+				'mezin': '#003878'
 			},
 			fontFamily: {
 				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],

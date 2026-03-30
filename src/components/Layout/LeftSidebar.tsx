@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Folder, MessageCircle, ChevronLeft, Database, MoreVertical, Edit, Trash, FolderOpen, PlusCircle, FolderPlus, FolderInput } from 'lucide-react';
+import { Folder, MessageCircle, ChevronLeft, Database, MoreVertical, Edit, Trash, FolderOpen, PlusCircle, FolderPlus, FolderInput, Calendar, GitBranch } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
 import KnowledgeBaseDialog from '../Knowledge/KnowledgeBaseDialog';
 import { useConversations } from '@/hooks/useConversations';
 import { useFolders } from '@/hooks/useFolders';
 import NewFolderDialog from '../Sidebar/NewFolderDialog';
 import { useChatStore } from '@/store/chatStore';
 import { toast } from 'sonner';
+import mizenLogo from '@/assets/mizenpro-ai-logo.png';
 
-const LeftSidebar: React.FC = () => {
+interface LeftSidebarProps {
+  onSectionChange?: (section: string) => void;
+}
+const LeftSidebar: React.FC<LeftSidebarProps> = ({ onSectionChange }) => {
   const {
     conversations,
     currentConversation,
@@ -27,9 +30,9 @@ const LeftSidebar: React.FC = () => {
     loading,
     createFolder,
     deleteFolder,
+    renameFolder,
   } = useFolders();
   const { setActiveFolderId, setActiveConversationId } = useChatStore();
-
   const [knowledgeBaseOpen, setKnowledgeBaseOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -37,35 +40,110 @@ const LeftSidebar: React.FC = () => {
   const [renameValue, setRenameValue] = useState<string>("");
 
   const handleCreateFolder = async (name: string, description: string, color: string) => {
-    await createFolder(name, description, color);
+    setActiveFolderId(await createFolder(name, description, color));
+    setActiveConversationId(null);
   };
 
+    const handleRenameFolder = async (folderId: string) => {
+    if (!renameValue.trim()) {
+      toast.error('Le nom ne peut pas être vide');
+      return;
+    }
+    
+    await renameFolder(folderId, renameValue.trim());
+    setRenamingId(null);
+    setRenameValue(renameValue.trim());
+
+  };
+
+    const startRenaming = (folderId: string, currentName: string) => {
+      setRenamingId(folderId);
+      setRenameValue(currentName);
+    };
+
+    const cancelRenaming = () => {
+      setRenamingId(null);
+      setRenameValue('');
+    };
+
+    const navItems = [
+    { 
+      id: 'new-conversation', 
+      label: 'Nouvelle conversation', 
+      icon: PlusCircle, 
+      action: () => {
+        setActiveFolderId(null);
+        setActiveConversationId(null);
+        onSectionChange?.('chat');
+      }
+    },
+    { 
+      id: 'agenda', 
+      label: 'Agenda', 
+      icon: Calendar, 
+      action: () => onSectionChange?.('calendar')
+    },
+    { 
+      id: 'workflow', 
+      label: 'Workflow', 
+      icon: GitBranch, 
+      action: () => onSectionChange?.('workflow')
+    },
+    /* { 
+      id: 'knowledge', 
+      label: 'Base de connaissances', 
+      icon: Database, 
+      action: () => setKnowledgeBaseOpen(true)
+    },*/
+   { 
+      id: 'knowledge', 
+      label: 'Base de connaissances', 
+      icon: Database, 
+      action: () => onSectionChange?.('knowledge')
+    },
+  ];
+
+
   return (
-    <aside className={cn("h-full bg-background border-r border-border flex flex-col transition-all duration-300", sidebarOpen ? "w-56" : "w-12")}>
-      {/* Header with collapse button */}
-      <div className="flex items-center justify-between p-2 border-b border-border bg-slate-50">
+    <aside style={{width:sidebarOpen && "260px"}} className={cn("h-full bg-slate-50 border-r border-border flex flex-col transition-all duration-300", sidebarOpen ? "w-56" : "w-12")}>
+     {/* Header with logo */}
+      <div className="flex items-center justify-between p-4 border-b border-border">
         {sidebarOpen && (
-          <Button 
-            onClick={() => {
-              createConversation('Nouvelle conversation');
-              setActiveFolderId(null);
-            }} 
-            size="sm" 
-            className="flex-1 justify-start text-white shadow-sm hover:shadow-md mr-2 bg-blue-950 hover:bg-blue-800"
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nouvelle conversation
-          </Button>
+          <img src={mizenLogo} alt="Mizen AI" className="h-8 object-contain" />
         )}
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0 hover:bg-muted" 
+          className={cn("h-8 w-8 p-0 hover:bg-muted rounded-lg", !sidebarOpen && "mx-auto")}
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          <ChevronLeft className={cn("h-4 w-4 transition-transform duration-200", !sidebarOpen && "rotate-180")} />
+          <ChevronLeft className={cn("h-4 w-4 text-muted-foreground transition-transform duration-200", !sidebarOpen && "rotate-180")} />
         </Button>
       </div>
+
+          {/* Navigation Items */}
+      <div className={cn("border-b border-border", sidebarOpen ? "p-3" : "p-2")}>
+        <div className="space-y-1">
+          {navItems.map((item) => (
+            <Button
+              key={item.id}
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "w-full rounded-md hover:bg-muted transition hover:text-mezin flex items-center",
+                sidebarOpen ? "justify-start px-3 h-9" : "justify-center px-2 h-9"
+              )}
+              onClick={item.action}
+              title={!sidebarOpen ? item.label : undefined}
+            >
+              <item.icon className={cn("h-4 w-4 text-foreground", sidebarOpen && "mr-2")} />
+              {sidebarOpen && <span className="text-sm">{item.label}</span>}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      
       
       {/* Content */}
       <ScrollArea className={cn("flex-1 transition-all duration-300", sidebarOpen ? "px-4 py-4" : "px-2 py-4")}>
@@ -74,7 +152,7 @@ const LeftSidebar: React.FC = () => {
           <div className="space-y-2">
             {sidebarOpen && (
               <div className="flex items-center justify-between px-2 mb-2">
-                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <h3 className="text-xs font-medium text-mezin uppercase tracking-wider">
                   Dossiers
                 </h3>
                 <Button
@@ -88,58 +166,111 @@ const LeftSidebar: React.FC = () => {
               </div>
             )}
             {folders.length === 0 && sidebarOpen && (
-              <div className="text-center py-8 text-sm text-muted-foreground">
+              <div className="text-center py-8 text-sm text-mezin">
                 Aucun dossier. Créez votre premier dossier pour organiser vos affaires.
               </div>
             )}
-            {folders.map(folder => (
+            {
+            sidebarOpen && 
+            folders.map(folder => (
               <Button 
                 key={folder.id} 
                 variant="ghost" 
                 className={cn(
-                  "w-full rounded-lg border border-transparent hover:bg-muted transition",
-                  sidebarOpen ? "justify-start p-2.5 h-auto" : "justify-center p-2 h-10"
+                  "w-full rounded-md hover:bg-muted hover:text-mezin transition",
+                  sidebarOpen ? "justify-start p-2.5 h-auto " : "justify-center p-2 h-10 "
                 )} 
                 onClick={() => {
-                  setActiveFolderId(folder.id);
-                  setActiveConversationId(null);
+                   setActiveConversationId(null);
+                   onSectionChange?.('chat');
+                   setActiveFolderId(folder.id);
+                 
                 }}
                 title={!sidebarOpen ? folder.name : undefined}
               >
                 <div className={cn("flex items-center w-full", sidebarOpen ? "gap-3" : "justify-center")}>
                   <Folder className="h-4 w-4" style={{ color: folder.color }} />
                   {sidebarOpen && (
-                    <div className="flex-1 text-left">
-                      <div className="font-medium text-foreground text-sm">{folder.name}</div>
-                      {folder.description && (
-                        <div className="text-xs text-muted-foreground truncate">
-                          {folder.description}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                      <div className="flex-1 text-left">
+                        {/* ✅ Mode édition inline */}
+                        {renamingId === folder.id ? (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="text"
+                              value={renameValue}
+                              onChange={(e) => setRenameValue(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.stopPropagation();
+                                  handleRenameFolder(folder.id);
+                                }
+                                if (e.key === 'Escape') {
+                                  e.stopPropagation();
+                                  cancelRenaming();
+                                }
+                              }}
+                              className="w-full px-2 py-1 text-sm border border-mezin rounded focus:outline-none focus:ring-1 focus:ring-mezin bg-white"
+                              autoFocus
+                              onBlur={() => handleRenameFolder(folder.id)}
+                            />
+                          </div>
+                        ) : (
+                          // ✅ Mode affichage normal
+                          <>
+                            <div className="font-medium text-sm">{folder.name}</div>
+                            {folder.description && (
+                              <div className="text-xs truncate">
+                                {folder.description}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
                   {sidebarOpen && (
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="ml-1 h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50" 
+                          className="ml-1 h-6 w-6 p-0  hover:text-white hover:bg-mezin" 
                           onClick={(e) => e.stopPropagation()}
                         >
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-56 p-1 z-50 bg-background" align="end">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="w-full justify-start text-sm text-destructive hover:text-destructive hover:bg-destructive/10" 
-                          onClick={() => deleteFolder(folder.id)}
-                        >
-                          <Trash className="h-4 w-4 mr-2" />
-                          Supprimer
-                        </Button>
+                        <div className="space-y-1">
+                          {/* ✅ Bouton Renommer */}
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full justify-start text-sm hover:bg-mezin hover:text-white transition-colors" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              startRenaming(folder.id, folder.name);
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Renommer
+                          </Button>
+                          
+                          {/* Bouton Supprimer */}
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full justify-start text-sm text-destructive hover:text-destructive hover:bg-destructive/10" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Êtes-vous sûr de vouloir supprimer "${folder.name}" ?`)) {
+                                deleteFolder(folder.id);
+                              }
+                            }}
+                          >
+                            <Trash className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </Button>
+                        </div>
                       </PopoverContent>
                     </Popover>
                   )}
@@ -151,33 +282,34 @@ const LeftSidebar: React.FC = () => {
           {/* Recent Conversations */}
           <div className="space-y-2">
             {sidebarOpen && (
-              <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">
+              <h3 className="text-xs font-medium text-mezin uppercase tracking-wider px-2 mb-2">
                 Conversations Récentes
               </h3>
             )}
-            {conversations.slice(0, 8).map(conversation => (
+            {sidebarOpen && conversations.slice(0, 8).map(conversation => (
               <Button 
                 key={conversation.id} 
                 variant="ghost" 
                 className={cn(
-                  "w-full rounded-lg border border-transparent hover:bg-muted transition group",
+                  "w-full rounded-md hover:bg-muted hover:text-mezin transition",
                   sidebarOpen ? "justify-start p-2.5 h-auto" : "justify-center p-2 h-10",
                   currentConversation?.id === conversation.id && "bg-muted border-border"
                 )} 
                 onClick={() => {
+                 
                   selectConversation(conversation);
+                  onSectionChange?.('chat');
                   setActiveFolderId(null);
                 }}
                 title={!sidebarOpen ? conversation.title : undefined}
               >
                 <div className={cn("flex items-center w-full", sidebarOpen ? "gap-3" : "justify-center")}>
-                  <MessageCircle className="h-4 w-4 text-foreground" />
                   {sidebarOpen && (
                     <div className="flex-1 text-left min-w-0">
-                      <div className="font-medium text-foreground text-sm truncate">
+                      <div className="font-medium  text-sm truncate">
                         {conversation.title}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs ">
                         {new Date(conversation.created_at).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
@@ -189,7 +321,7 @@ const LeftSidebar: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="ml-1 h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/50 opacity-100 group-hover:opacity-100" 
+                          className="ml-1 h-6 w-6 p-0 text-mezin hover:text-white hover:bg-mezin " 
                           onClick={(e) => e.stopPropagation()}
                         >
                           <MoreVertical className="h-4 w-4" />
@@ -199,7 +331,7 @@ const LeftSidebar: React.FC = () => {
                         <div className="space-y-1">
                           {/* Move to folder section */}
                           <div className="px-2 py-1.5">
-                            <div className="text-xs font-medium text-muted-foreground mb-2">Déplacer vers</div>
+                            <div className="text-xs font-medium text-mezin mb-2">Déplacer vers</div>
                             <div className="space-y-1 max-h-40 overflow-y-auto">
                               <Button
                                 variant="ghost"
@@ -260,22 +392,8 @@ const LeftSidebar: React.FC = () => {
         </div>
       </ScrollArea>
 
-      {/* Footer: Knowledge Base */}
-      <div className="border-t border-border p-2">
-        <Button 
-          variant="ghost" 
-          className={cn("w-full rounded-lg", sidebarOpen ? "justify-start h-10 px-3" : "justify-center h-10 px-2")} 
-          onClick={() => setKnowledgeBaseOpen(true)} 
-          title={!sidebarOpen ? "Base de connaissances" : undefined}
-        >
-          <div className={cn("flex items-center w-full", sidebarOpen ? "gap-3" : "justify-center")}>
-            <Database className="h-4 w-4 text-foreground" />
-            {sidebarOpen && <span className="text-sm">Base de connaissances</span>}
-          </div>
-        </Button>
-        <KnowledgeBaseDialog open={knowledgeBaseOpen} onOpenChange={setKnowledgeBaseOpen} />
-      </div>
 
+<KnowledgeBaseDialog open={knowledgeBaseOpen} onOpenChange={setKnowledgeBaseOpen} />
       <NewFolderDialog 
         open={newFolderOpen} 
         onOpenChange={setNewFolderOpen}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Deadline } from '@/store/types';
 import { useChatStore } from '@/store/chatStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +27,7 @@ interface DeadlineListProps {
 }
 
 const DeadlineList: React.FC<DeadlineListProps> = ({ folderId, deadlines }) => {
-  const { addDeadline, updateDeadline, removeDeadline } = useChatStore();
+  const { addDeadline, updateDeadline, removeDeadline,loadFolder } = useChatStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDeadline, setEditingDeadline] = useState<Deadline | null>(null);
   const [newDeadline, setNewDeadline] = useState({
@@ -37,6 +37,30 @@ const DeadlineList: React.FC<DeadlineListProps> = ({ folderId, deadlines }) => {
     priority: 'medium' as Deadline['priority'],
     status: 'pending' as Deadline['status']
   });
+
+
+
+    // ✅ Recharger les documents quand le composant monte ou devient visible
+    useEffect(() => {
+      const reloadDocuments = async () => {
+        console.log('📄 [DOCUMENTS] Reloading folder data...');
+        try {
+          await loadFolder(folderId);
+          console.log('✅ [DOCUMENTS] Folder reloaded successfully');
+        } catch (error) {
+          console.error('❌ [DOCUMENTS] Error reloading folder:', error);
+        }
+      };
+  
+      // Recharger immédiatement au montage
+      reloadDocuments();
+  
+      // ✅ Recharger périodiquement toutes les 5 secondes
+      const interval = setInterval(reloadDocuments, 5000);
+  
+      return () => clearInterval(interval);
+    }, [folderId, loadFolder]);
+
 
   const handleAddDeadline = async () => {
     if (!newDeadline.title.trim()) {
@@ -143,9 +167,9 @@ const DeadlineList: React.FC<DeadlineListProps> = ({ folderId, deadlines }) => {
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg">Échéancier automatique</CardTitle>
+    <Card className="h-full flex flex-col border-none shadow-none">
+      <CardHeader className="flex-row items-center justify-end space-y-0 pb-4">
+        {/*<CardTitle className="text-lg">Échéancier automatique</CardTitle>*/}
         <Dialog open={isAddDialogOpen || !!editingDeadline} onOpenChange={(open) => {
           if (!open) {
             setIsAddDialogOpen(false);
@@ -159,19 +183,21 @@ const DeadlineList: React.FC<DeadlineListProps> = ({ folderId, deadlines }) => {
             });
           }
         }}>
+          {deadlines.length > 0 ? (            
           <DialogTrigger asChild>
-            <Button size="sm" onClick={() => setIsAddDialogOpen(true)}>
+            <Button size="sm" onClick={() => setIsAddDialogOpen(true)} className='flex items-center gap-2 px-6 my-3 py-3 text-sm font-medium border border-mezin transition-colors relative text-blue-950 bg-white hover:bg-mezin hover:text-white'>
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle échéance
             </Button>
           </DialogTrigger>
+          ) : null}
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
                 {editingDeadline ? 'Modifier l\'échéance' : 'Nouvelle échéance'}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 ">
               <div>
                 <Label htmlFor="title">Titre</Label>
                 <Input
@@ -234,13 +260,13 @@ const DeadlineList: React.FC<DeadlineListProps> = ({ folderId, deadlines }) => {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => {
+                <Button variant="outline" className='border border-mezin-ciel' onClick={() => {
                   setIsAddDialogOpen(false);
                   setEditingDeadline(null);
                 }}>
                   Annuler
                 </Button>
-                <Button onClick={editingDeadline ? handleUpdateDeadline : handleAddDeadline}>
+                <Button variant="ghost" className='border border-mezin bg-mezin text-white' onClick={editingDeadline ? handleUpdateDeadline : handleAddDeadline}>
                   {editingDeadline ? 'Modifier' : 'Ajouter'}
                 </Button>
               </div>
@@ -259,8 +285,8 @@ const DeadlineList: React.FC<DeadlineListProps> = ({ folderId, deadlines }) => {
                 <div 
                   key={deadline.id} 
                   className={cn(
-                    "flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-accent/50 transition-colors",
-                    overdue && "border-red-200 bg-red-50/50",
+                    "flex items-center justify-between p-4 border rounded-sm hover:bg-gray-50 cursor-pointer transition-colors",
+                    overdue ,
                     deadline.status === 'completed' && "opacity-75"
                   )}
                 >

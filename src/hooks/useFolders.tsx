@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useChatStore } from '@/store/chatStore';
+import { toast } from 'sonner';
 
 export interface Folder {
   id: string;
@@ -33,6 +34,20 @@ export const useFolders = () => {
     [folders]
   );
 
+
+const renameFolder = async (folderId: string, newName: string) => {
+  try {
+    // ✅ Utiliser updateFolderName du store (déjà optimiste)
+    await updateFolderName(folderId, newName);
+    
+    toast.success('Dossier renommé avec succès');
+  } catch (error) {
+    console.error('Error renaming folder:', error);
+    toast.error('Erreur lors du renommage');
+  }
+};
+
+
   const createFolder = async (name: string, description?: string, color?: string) => {
     return createFolderAction(name, description, color);
   };
@@ -55,5 +70,6 @@ export const useFolders = () => {
     updateFolder,
     deleteFolder,
     loadFolders,
+    renameFolder,
   };
 };

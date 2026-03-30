@@ -1,4 +1,3 @@
-
 // Common types used across the chat store
 
 export interface Message {
@@ -8,6 +7,15 @@ export interface Message {
   timestamp: number;
   user_id?: string;
 }
+
+export interface ActiveWorkflow {
+  id: string;
+  title: string;
+  shortTitle: string;
+  icon: string; // Icon name as string for serialization
+  category: string;
+}
+
 
 export interface Conversation {
   id: string;
@@ -36,7 +44,9 @@ export interface TimelineEntry {
   type: 'fact' | 'procedure' | 'hearing' | 'deadline' | 'event';
   date: number;
   folderId: string;
+  conversationId?: string; // ✅ AJOUTÉ - Pour lier l'événement à une conversation
   createdAt: number;
+  showInCalendar?: boolean; // undefined/true = visible, false = masqué
 }
 
 export interface GeneratedDocument {
@@ -92,7 +102,9 @@ export interface ChatState {
   updateConversationTitle: (id: string, title: string) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
   moveConversationToFolder: (conversationId: string, folderId: string | null) => Promise<void>;
+  loadConversation: (conversationId: string) => Promise<void>;
   createFolder: (name: string, description?: string, color?: string) => Promise<string>;
+  loadFolder: (folderId: string) => Promise<Folder>;
   updateFolderName: (id: string, name: string) => Promise<void>;
   deleteFolder: (id: string) => Promise<void>;
   // Attachment actions
@@ -110,6 +122,12 @@ export interface ChatState {
   addDeadline: (folderId: string, deadline: Omit<Deadline, 'id' | 'folderId' | 'createdAt'>) => Promise<void>;
   updateDeadline: (folderId: string, deadlineId: string, updates: Partial<Deadline>) => Promise<void>;
   removeDeadline: (folderId: string, deadlineId: string) => Promise<void>;
+
+    // Workflow actions
+  activateWorkflow: (conversationId: string, workflow: ActiveWorkflow) => void;
+  deactivateWorkflow: (conversationId: string, workflowId: string) => void;
+
+
   toggleSidebar: () => void;
   setIsTyping: (value: boolean) => void;
 }

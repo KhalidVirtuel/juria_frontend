@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from "react";
+// src/components/KnowledgeBaseDialog.tsx
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,296 +10,611 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, FileText, Download, BookOpen } from "lucide-react";
-
-interface KnowledgeBaseDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-// Legal sources data with expanded information
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Search,
+  FileText,
+  Download,
+  BookOpen,
+  Trash2,
+  Upload,
+  BarChart3,
+} from "lucide-react";
+import { ragAPI, RagFile, ragAdminAPI, catalogueAPI, searchAPI} from "@/lib/api";
+import { useQuery } from '@tanstack/react-query';
+/* —————————————————————————————————————————————
+   Catalogue fictif (facultatif) */
 const legalSources = [
   {
     id: "code-penal",
     title: "Le Code pénal marocain",
-    description: "Ensemble des lois définissant les infractions et fixant les peines applicables",
+    description:
+      "Ensemble des lois définissant les infractions et fixant les peines applicables",
     articles: [
-      { id: "477", title: "Article 477", content: "Quiconque, par fraude ou violence, enlève ou fait enlever un mineur de moins de dix-huit ans..." },
-      { id: "485", title: "Article 485", content: "Est puni de la réclusion de cinq à dix ans tout attentat à la pudeur consommé ou tenté..." },
-      { id: "496", title: "Article 496", content: "Quiconque, par violence, contrainte ou menace, a commis un viol, est puni de la réclusion..." },
+      { id: "477", title: "Article 477", content: "…" },
+      { id: "485", title: "Article 485", content: "…" },
+      { id: "496", title: "Article 496", content: "…" },
     ],
-    downloadUrl: "/documents/code-penal-maroc.pdf"
-  },
-  {
-    id: "code-procedure",
-    title: "Le Code de procédure pénale",
-    description: "Règles régissant le déroulement du procès pénal",
-    articles: [
-      { id: "1", title: "Article 1", content: "L'action publique pour l'application des peines est mise en mouvement et exercée par les magistrats..." },
-      { id: "45", title: "Article 45", content: "La police judiciaire est exercée, sous la direction du procureur du Roi..." },
-      { id: "73", title: "Article 73", content: "Les officiers de police judiciaire peuvent, en cas de crime flagrant..." },
-    ],
-    downloadUrl: "/documents/code-procedure-penale-maroc.pdf"
-  },
-  {
-    id: "code-civil",
-    title: "Le Code civil",
-    description: "Lois régissant les rapports entre les personnes physiques ou morales",
-    articles: [
-      { id: "618", title: "Article 618", content: "Le contrat est une convention par laquelle une ou plusieurs personnes s'obligent..." },
-      { id: "723", title: "Article 723", content: "Toute obligation doit être exécutée de bonne foi..." },
-      { id: "769", title: "Article 769", content: "Le débiteur répond du dommage causé par son inexécution..." },
-    ],
-    downloadUrl: "/documents/code-civil-maroc.pdf"
-  },
-  {
-    id: "code-travail",
-    title: "Le Code du travail",
-    description: "Législation encadrant les relations employeur-employé",
-    articles: [
-      { id: "1", title: "Article 1", content: "Est considérée comme salariée toute personne qui s'engage à exercer son activité..." },
-      { id: "14", title: "Article 14", content: "La période d'essai est la période pendant laquelle chacune des parties peut rompre..." },
-      { id: "152", title: "Article 152", content: "La durée normale du travail des salariés est fixée à 2288 heures par année..." },
-    ],
-    downloadUrl: "/documents/code-travail-maroc.pdf"
-  },
-  {
-    id: "autres-domaines",
-    title: "Le droit commercial, immobilier, des sociétés, de la famille, des étrangers, etc.",
-    description: "Ensemble des domaines juridiques spécialisés",
-    articles: [
-      { id: "comm-1", title: "Code de Commerce - Article 1", content: "Les commerçants sont ceux qui exercent des actes de commerce et en font leur profession habituelle..." },
-      { id: "fam-1", title: "Code de la Famille - Article 1", content: "Le présent code est dénommé Code de la Famille. Il est désigné dans la présente loi par le Code..." },
-      { id: "soc-1", title: "Loi sur les Sociétés - Article 1", content: "Les sociétés commerciales sont constituées par deux ou plusieurs personnes qui conviennent..." },
-    ],
-    downloadUrl: "/documents/codes-specialises-maroc.pdf"
-  },
-  {
-    id: "structure-judiciaire",
-    title: "La structure judiciaire du Maroc",
-    description: "Procédures, tribunaux, délais, autorités compétentes",
-    articles: [
-      { id: "org-1", title: "Organisation Judiciaire - Article 1", content: "La justice est rendue sur l'ensemble du territoire du Royaume au nom de Sa Majesté le Roi..." },
-      { id: "org-2", title: "Tribunaux de Première Instance", content: "Les tribunaux de première instance sont compétents pour connaître de toutes les affaires..." },
-      { id: "org-3", title: "Cours d'Appel", content: "Les cours d'appel connaissent des appels des jugements des tribunaux de première instance..." },
-    ],
-    downloadUrl: "/documents/organisation-judiciaire-maroc.pdf"
-  },
-  {
-    id: "documents-legaux",
-    title: "Les documents légaux marocains courants",
-    description: "Certificats médicaux, plaintes, PV de police, convocations, actes notariés, statuts, contrats de travail…",
-    templates: [
-      { id: "plainte", title: "Modèle de plainte", description: "Format standard pour déposer une plainte auprès des autorités", downloadUrl: "/templates/modele-plainte.docx" },
-      { id: "contrat-travail", title: "Contrat de travail", description: "Contrat de travail standard conforme au Code du travail marocain", downloadUrl: "/templates/contrat-travail.docx" },
-      { id: "statuts", title: "Statuts de société", description: "Modèle de statuts pour la création d'une SARL", downloadUrl: "/templates/statuts-sarl.docx" },
-    ]
+    downloadUrl: "/documents/code-penal-maroc.pdf",
   },
 ];
 
-const KnowledgeBaseDialog = ({ open, onOpenChange }: KnowledgeBaseDialogProps) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredSources, setFilteredSources] = useState(legalSources);
-  const [activeTab, setActiveTab] = useState("overview");
-  const [selectedSource, setSelectedSource] = useState<any>(null);
+/* —————————————————————————————————————————————
+   Utils */
+const formatBytes = (bytes?: number) => {
+  if (!bytes || isNaN(bytes)) return "—";
+  const units = ["o", "Ko", "Mo", "Go"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+};
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredSources(legalSources);
-      return;
+type Stats = { total: number; byPath: { path: string; count: number }[] };
+
+const KnowledgeBaseDialog = ({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) => {
+  const [tab, setTab] = React.useState<"searchTab" | "overview" | "ragData" | "ragStats">(
+    "searchTab"
+  );
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+    // RAG stats (onglet overview)
+  const [filesDocuments, setFilesDocuments] = React.useState<RagFile[]>([]);
+  const [loadingFilesDocuments, setLoadingFilesDocuments] = React.useState(false);
+
+  // RAG files (onglet Rag-in)
+  const [files, setFiles] = React.useState<RagFile[]>([]);
+  const [loadingFiles, setLoadingFiles] = React.useState(false);
+  const [uploading, setUploading] = React.useState(false);
+  const fileRef = React.useRef<HTMLInputElement | null>(null);
+
+  // RAG stats (onglet Rag-stat)
+  const [stats, setStats] = React.useState<Stats | null>(null);
+  const [loadingStats, setLoadingStats] = React.useState(false);
+
+
+
+    // Charger la liste lors de l’ouverture de l’onglet overview / Document 
+  React.useEffect(() => {
+    if (tab !== "overview") return;
+    (async () => {
+      try {
+        setLoadingFilesDocuments(true);
+        const { files } = await catalogueAPI.list();
+        setFilesDocuments(files || []);
+      } catch (e) {
+        console.error("Documents list failed", e);
+      } finally {
+        setLoadingFilesDocuments(false);
+      }
+    })();
+  }, [tab]);
+
+
+  // Charger la liste lors de l’ouverture de l’onglet ragData
+  React.useEffect(() => {
+    if (tab !== "ragData") return;
+    (async () => {
+      try {
+        setLoadingFiles(true);
+        const { files } = await ragAPI.list();
+        setFiles(files || []);
+      } catch (e) {
+        console.error("RAG list failed", e);
+      } finally {
+        setLoadingFiles(false);
+      }
+    })();
+  }, [tab]);
+
+  // Charger les stats
+  const refreshStats = React.useCallback(async () => {
+    try {
+      setLoadingStats(true);
+      const dataRagAPI = await ragAPI.stats();
+      const dataCatalogueAPI = await catalogueAPI.stats();
+     console.log(dataRagAPI)
+     console.log(dataCatalogueAPI)
+
+     const mergedData = {
+        total: dataRagAPI.total + dataCatalogueAPI.total,
+        byPath: [...dataRagAPI.byPath, ...dataCatalogueAPI.byPath]
+      };
+
+      console.log(mergedData)
+      setStats(mergedData);
+    } catch (e) {
+      console.error("stats failed", e);
+    } finally {
+      setLoadingStats(false);
     }
+  }, []);
 
-    const query = searchQuery.toLowerCase();
-    const filtered = legalSources.filter(source => 
-      source.title.toLowerCase().includes(query) || 
-      source.description.toLowerCase().includes(query) ||
-      (source.articles && source.articles.some(article => 
-        article.title.toLowerCase().includes(query) || 
-        article.content.toLowerCase().includes(query)
-      ))
+  React.useEffect(() => {
+    if (tab !== "ragStats") return;
+    refreshStats();
+  }, [tab, refreshStats]);
+
+  const openPicker = () => fileRef.current?.click();
+
+
+  //Pickfile doc
+  const onPickFileDoc = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const { file: saved } = await catalogueAPI.upload(file);
+      // si on est sur Rag-in, maj la liste locale
+      if (saved && tab === "overview") setFilesDocuments((prev) => [saved, ...prev]);
+      // toujours rafraîchir les stats
+      await refreshStats();
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Échec de l’upload / catalogue.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  //Pickfile RAG
+  const onPickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const { file: saved } = await ragAPI.upload(file);
+      // si on est sur Rag-in, maj la liste locale
+      if (saved && tab === "ragData") setFiles((prev) => [saved, ...prev]);
+      // toujours rafraîchir les stats
+      await refreshStats();
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Échec de l’upload / ingestion.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const onDeleteByPath = async (path: string) => {
+    if (!confirm("Supprimer tous les embeddings pour ce document ?")) return;
+    try {
+      await ragAPI.deleteByPath(path);
+      await refreshStats();
+    } catch (err) {
+      console.error("Delete by path failed", err);
+      alert("Échec de la suppression.");
+    }
+  };
+
+  const onDeleteFileRow = async (name: string) => {
+    if (!confirm("Supprimer ce fichier et ses embeddings ?")) return;
+    try {
+      await ragAPI.remove(name);
+      setFiles((prev) => prev.filter((f) => f.name !== name));
+      // rafraîchir stats si l’onglet est ouvert
+      if (tab === "ragStats") {
+        await refreshStats();
+      }
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert("Échec de la suppression.");
+    }
+  };
+
+  const onDeleteFileRowDocument = async (name: string) => {
+    if (!confirm("Supprimer ce fichier et ses embeddings ?")) return;
+    try {
+      await catalogueAPI.remove(name);
+      setFilesDocuments((prev) => prev.filter((f) => f.name !== name));
+      // rafraîchir stats si l’onglet est ouvert
+      if (tab === "ragStats") {
+        await refreshStats();
+      }
+    } catch (err) {
+      console.error("Delete failed", err);
+      alert("Échec de la suppression.");
+    }
+  };
+
+  const filteredCatalog = React.useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return legalSources;
+    return legalSources.filter(
+      (s) =>
+        s.title.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q)
     );
-    
-    setFilteredSources(filtered);
   }, [searchQuery]);
 
-  const handleSourceClick = (source: any) => {
-    setSelectedSource(source);
-    setActiveTab("details");
-  };
 
-  const handleBackClick = () => {
-    setActiveTab("overview");
-    setSelectedSource(null);
-  };
 
-  const handleDownloadClick = (url: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    // In a real app, this would download the file
-    console.log(`Downloading: ${url}`);
-    // For now, just show a message
-    alert(`Dans une version de production, ceci téléchargerait le document: ${url}`);
-  };
+const onRebuild = async () => {
+  try {
+    setUploading(true); // ✅ Ajoute ceci
+    const { ok, pid, logFile } = await ragAPI.rebuild();
+    if (ok) {
+      console.log('RAG rebuild lancé, PID:', pid, 'log:', logFile);
+      // Optionnel : rafraîchir les stats après un délai
+      setTimeout(refreshStats, 3000);
+    }
+  } catch (err) {
+    console.error('Rebuild failed', err);
+    alert('Échec du rebuild RAG');
+  } finally {
+    setUploading(false); // ✅ Ajoute ceci
+  }
+};
+
+const onRebuildCatalogue = async () => {
+  try {
+    setUploading(true); // ✅ Ajoute ceci
+    const { ok, pid, logFile } = await catalogueAPI.rebuild();
+    if (ok) {
+      console.log('catalogueAPI RAG rebuild lancé, PID:', pid, 'log:', logFile);
+      setTimeout(refreshStats, 3000);
+    }
+  } catch (err) {
+    console.error('Rebuild catalogue failed', err);
+    alert('Échec du rebuild catalogue');
+  } finally {
+    setUploading(false); // ✅ Ajoute ceci
+  }
+};
+
+const onRebuildAll = async () => {
+  try {
+    setUploading(true); // ✅ Ajoute ceci
+    const { ok, pid, logFile } = await ragAPI.rebuild();
+    if (ok) {
+      console.log('RAG rebuild lancé, PID:', pid, 'log:', logFile);
+    }
+    console.log('pas encors.....');
+    setTimeout(refreshStats, 3000);
+  } catch (err) {
+    console.error('Rebuild all failed', err);
+    alert('Échec du rebuild total');
+  } finally {
+    setUploading(false); // ✅ Ajoute ceci
+  }
+};
+
+
+
+  const [q, setQ] = React.useState('');
+  const [mode, setMode] = React.useState<'phrase' | 'all' | 'any'>('phrase');
+  const dq = useDebounced(q, 350);
+
+  const { data, isFetching } = useQuery({
+    queryKey: ['search-content', dq, mode],
+    queryFn: () => searchAPI.searchFiles(dq, mode),
+    enabled: dq.trim().length > 0,
+    staleTime: 30_000,
+  });
+
+  const filesSearch = data?.results ?? [];
+console.log("filesSearch")
+console.log(filesSearch)
+  function useDebounced<T>(value: T, delay = 300) {
+  const [v, setV] = React.useState(value);
+  React.useEffect(() => {
+    const id = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return v;
+}
+
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] flex flex-col">
+      <DialogContent className="sm:max-w-[980px] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Base de connaissances juridiques
+            Base de connaissances
           </DialogTitle>
-          <div className="relative mt-2">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher des codes, articles, ou sujets juridiques..."
-              className="w-full pl-9 pr-4"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="details" disabled={!selectedSource}>
-              {selectedSource ? selectedSource.title.substring(0, 20) + "..." : "Détails"}
+        <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="flex-1 flex flex-col gap-3">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="searchTab">Recherche</TabsTrigger>
+            <TabsTrigger value="overview">Documents Internes</TabsTrigger>
+            <TabsTrigger value="ragData">Dictionnaire de lios</TabsTrigger>
+            <TabsTrigger value="ragStats">
+              <BarChart3 className="h-4 w-4 mr-1" />
+              Data-stats
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="flex-1 overflow-hidden">
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-4 py-2">
-                {filteredSources.map((source) => (
-                  <div 
-                    key={source.id} 
-                    className="border rounded-md p-4 hover:bg-slate-50 cursor-pointer transition-colors"
-                    onClick={() => handleSourceClick(source)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium text-black mb-2">{source.title}</h3>
-                      {source.downloadUrl && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => handleDownloadClick(source.downloadUrl, e)}
-                          title="Télécharger le document"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{source.description}</p>
-                    {source.articles && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        {source.articles.length} articles disponibles
-                      </div>
-                    )}
-                    {source.templates && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        {source.templates.length} modèles disponibles
-                      </div>
-                    )}
-                  </div>
-                ))}
 
-                {filteredSources.length === 0 && (
-                  <div className="text-center py-10 text-muted-foreground">
-                    Aucun résultat trouvé pour "{searchQuery}"
-                  </div>
-                )}
-              </div>
+           {/* Search */}
+          <TabsContent value="searchTab" className="flex-1 overflow-hidden">
+              <div className="flex items-center justify-around mb-2 relative mt-2">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Rechercher des codes, articles, ou sujets juridiques..."
+                  className="w-[460px] pl-9 pr-4"
+                  value={q}
+                  onChange={e => setQ(e.target.value)}
+                />
+                 <select value={mode} onChange={e => setMode(e.target.value as any)}  className="w-[460px] pl-9 pr-4 select">
+                  <option value="phrase">Phrase exacte</option>
+                  <option value="all">Tous les mots</option>
+                  <option value="any">Au moins un mot</option>
+                </select>
+              </div>              
+
+            <ScrollArea className="h-[320px] pr-3">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead className="text-center w-[120px]">Taille</TableHead>
+                    <TableHead className="w-[240px] text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isFetching ? (
+                    <TableRow>
+                      <TableCell colSpan={4}>Chargement…</TableCell>
+                    </TableRow>
+                  ) : filesSearch.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4}>Aucun fichier ne contient cette suite de mots..</TableCell>
+                    </TableRow>
+                  ) : (
+                        filesSearch.map((element) => (
+                          <TableRow>
+                            <TableCell colSpan={4} key={element.filename}> 
+                              <a className="underline" href={element.filename} target="_blank" rel="noreferrer">
+                              {element.filename}
+                              </a>
+                              <hr/>
+                              <span className="text-md text-muted-foreground  italic">"... {element.snippets[0]} ..."</span>
+                            </TableCell> 
+                          </TableRow>
+                        ))
+                     )}
+                </TableBody>
+              </Table>
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="details" className="flex-1 overflow-hidden">
-            {selectedSource && (
-              <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between mb-4">
-                  <Button variant="outline" size="sm" onClick={handleBackClick}>
-                    Retour
-                  </Button>
-                  {selectedSource.downloadUrl && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => handleDownloadClick(selectedSource.downloadUrl, e)}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Télécharger le document complet
-                    </Button>
-                  )}
-                </div>
-
-                <ScrollArea className="flex-1 pr-4">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-medium text-black mb-1">{selectedSource.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">{selectedSource.description}</p>
-                    </div>
-
-                    {selectedSource.articles && selectedSource.articles.length > 0 && (
-                      <div>
-                        <h4 className="text-md font-medium mb-2 flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Articles principaux
-                        </h4>
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[100px]">Référence</TableHead>
-                              <TableHead>Contenu</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {selectedSource.articles.map((article: any) => (
-                              <TableRow key={article.id}>
-                                <TableCell className="font-medium">{article.title}</TableCell>
-                                <TableCell>{article.content}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    )}
-
-                    {selectedSource.templates && selectedSource.templates.length > 0 && (
-                      <div className="mt-6">
-                        <h4 className="text-md font-medium mb-2 flex items-center gap-2">
-                          <FileText className="h-4 w-4" />
-                          Modèles de documents
-                        </h4>
-                        <div className="space-y-2">
-                          {selectedSource.templates.map((template: any) => (
-                            <div key={template.id} className="border rounded-md p-3 flex justify-between items-center">
-                              <div>
-                                <div className="font-medium text-black">{template.title}</div>
-                                <div className="text-sm text-muted-foreground">{template.description}</div>
-                              </div>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                onClick={(e) => handleDownloadClick(template.downloadUrl, e)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
+          {/* OVERVIEW */}
+          <TabsContent value="overview" className="flex-1 overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-muted-foreground">
+                Uploadez vos documents <b>.txt</b>, <b>.pdf</b>, <b>.doc</b>, <b>.docx</b>.
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={fileRef}
+                  type="file"
+                  accept=".txt,.pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={onPickFileDoc}
+                />
+                <Button onClick={openPicker} disabled={uploading} className="flex items-center gap-2 border border-blue-950 bg-white text-blue-950 hover:text-white hover:bg-mezin">
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Import…" : "Ajouter un document interne"}
+                </Button>
+                <Button onClick={onRebuildCatalogue} disabled={uploading} className="flex items-center gap-2 border border-blue-950 bg-white text-blue-950 hover:text-white hover:bg-mezin">
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Building…" : "Rebuild le RAG - Documents interne -cccccccc"}
+                </Button>
+               
+              </div>
+            </div>
+
+            <ScrollArea className="h-[320px] pr-3">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead className="text-center w-[120px]">Taille</TableHead>
+                    <TableHead className="w-[240px] text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingFilesDocuments ? (
+                    <TableRow>
+                      <TableCell colSpan={4}>Chargement…</TableCell>
+                    </TableRow>
+                  ) : filesDocuments.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4}>Aucun fichier.</TableCell>
+                    </TableRow>
+                  ) : (
+                    filesDocuments.map((f) => (
+                      <TableRow key={f.id}>
+                        <TableCell className="font-medium ">
+                          <a className="underline" href={f.url} target="_blank" rel="noreferrer">
+                            {f.name}
+                          </a>
+                        </TableCell>
+                        <TableCell className=" text-center w-[120px]">{formatBytes(f.size)}</TableCell>
+                        <TableCell className="space-x-2 text-center w-[240px]">
+                          <Button variant="outline" size="sm" onClick={() => window.open(f.url!, "_blank")}>
+                            <Download className="h-4 w-4 mr-1" />
+                            Ouvrir
+                          </Button>
+                          <Button variant="destructive" size="icon" onClick={() => onDeleteFileRowDocument(f.name!)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </TabsContent>
+
+          {/* RAG-IN */}
+          <TabsContent value="ragData" className="flex-1 overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-muted-foreground">
+                Uploadez vos documents <b>.txt</b>, <b>.pdf</b>, <b>.doc</b>, <b>.docx</b>.
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  ref={fileRef}
+                  type="file"
+                  accept=".txt,.pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={onPickFile}
+                />
+                <Button onClick={openPicker} disabled={uploading} className="flex items-center gap-2 border border-blue-950 bg-white text-blue-950 hover:text-white hover:bg-mezin">
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Import…" : "Ajouter un document de lios"}
+                </Button>
+                <Button onClick={onRebuild} disabled={uploading} className="flex items-center gap-2 border border-blue-950 bg-white text-blue-950 hover:text-white hover:bg-mezin">
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Building…" : "Rebuild le RAG  - xxxxxxDictionaire de lois-xxx"}
+                </Button>
+               
+              </div>
+            </div>
+
+            <ScrollArea className="h-[320px] pr-3">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead className="text-center w-[120px]">Taille</TableHead>
+                    <TableHead className="w-[240px] text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingFiles ? (
+                    <TableRow>
+                      <TableCell colSpan={4}>Chargement…</TableCell>
+                    </TableRow>
+                  ) : files.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4}>Aucun fichier.</TableCell>
+                    </TableRow>
+                  ) : (
+                    files.map((f) => (
+                      <TableRow key={f.id}>
+                        <TableCell className="font-medium">
+                          <a className="underline" href={f.url} target="_blank" rel="noreferrer">
+                            {f.name}
+                          </a>
+                        </TableCell>
+                        <TableCell className="w-[120px] text-center">{formatBytes(f.size)}</TableCell>
+                        <TableCell className="w-[240px] text-center space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => window.open(f.url!, "_blank")}>
+                            <Download className="h-4 w-4 mr-1" />
+                            Ouvrir
+                          </Button>
+                          <Button variant="destructive" size="icon" onClick={() => onDeleteFileRow(f.name!)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </TabsContent>
+
+          {/* RAG-STATS */}
+          <TabsContent value="ragStats" className="flex-1 overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-sm text-muted-foreground">
+                Statistiques d’indexation — total de chunks et top fichiers.
+              </div>
+              <div className="flex items-center gap-2">
+                {/* même input caché pour réutiliser l’upload depuis cet onglet */}
+                <Input
+                  ref={fileRef}
+                  type="file"
+                  accept=".txt,.pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={onPickFile}
+                />
+                <Button onClick={openPicker} disabled={uploading} className="flex items-center gap-2 border border-blue-950 bg-white text-blue-950 hover:text-white hover:bg-mezin">
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Import…" : "Ajouter un fichier"}
+                </Button>
+
+                 <Button onClick={onRebuildAll} disabled={uploading} className="flex items-center gap-2 border border-blue-950 bg-white text-blue-950 hover:text-white hover:bg-mezin">
+                  <Upload className="h-4 w-4" />
+                  {uploading ? "Building…" : "Rebuild le RAG Total"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-md border overflow-hidden">
+              <ScrollArea className="h-[320px] pr-3">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Fichier (path)</TableHead>
+                    <TableHead className="text-right w-[120px]"># chunks</TableHead>
+                    <TableHead className="w-[80px] text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingStats ? (
+                    <TableRow>
+                      <TableCell colSpan={3}>Chargement…</TableCell>
+                    </TableRow>
+                  ) : !stats || stats.byPath.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3}>Aucune donnée.</TableCell>
+                    </TableRow>
+                  ) : (
+                    stats.byPath.map((row) => (
+                      <TableRow key={row.path}>
+                        <TableCell className="font-medium break-all">{row.path}</TableCell>
+                        <TableCell className="text-right">{row.count}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => onDeleteByPath(row.path)}
+                            title="Supprimer tous les chunks de ce fichier"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+               
+              </ScrollArea>
+            </div>
+           
           </TabsContent>
         </Tabs>
 
-        <div className="text-xs text-muted-foreground mt-2 italic">
-          Cette base de connaissances contient les sources juridiques marocaines utilisées pour entraîner notre modèle d'assistant juridique.
+              {stats && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Total des points indexés : <b>{stats.total}</b>
+                </div>
+                )}
+        <div className="text-xs text-muted-foreground  italic">
+          Les documents RAG restent privés sur votre compte et servent uniquement à vos réponses.
         </div>
       </DialogContent>
     </Dialog>

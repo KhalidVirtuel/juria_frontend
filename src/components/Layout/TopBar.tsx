@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { User, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FloatingClasseur from '../Navigation/FloatingClasseur';
+import LanguageSwitcher from './LanguageSwitcher'
 
 interface TopBarProps {
   activeSection: string;
@@ -14,6 +15,7 @@ const TopBar: React.FC<TopBarProps> = ({ activeSection, onSectionChange }) => {
   return (
     <header className="h-16 apple-glass border-b border-white/20 backdrop-blur-2xl flex items-center px-6 z-40">
       <div className="flex items-center gap-4">
+        <LanguageSwitcher/>
         {/* Profile Button */}
         <Button
           variant="ghost"

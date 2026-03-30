@@ -1,6 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore, Conversation } from '@/store/chatStore';
+import { useConversations } from '@/hooks/useConversations'; // ✅ Ajouter cet import
 import { MessageSquare, Edit, Trash, MoreVertical, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -17,9 +17,13 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation }) => 
   const [title, setTitle] = useState(conversation.title);
   const inputRef = useRef<HTMLInputElement>(null);
   
+  // ✅ Ajouter useConversations pour avoir selectConversation
+  const { selectConversation } = useConversations();
+  
   const { 
     activeConversationId, 
     setActiveConversationId, 
+    setActiveFolderId, // ✅ Ajouter setActiveFolderId
     updateConversationTitle, 
     deleteConversation,
     moveConversationToFolder,
@@ -69,6 +73,31 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation }) => 
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  // ✅ Nouveau handler pour le clic - identique à LeftSidebar
+  const handleConversationClick = () => {
+    if (!isEditing) {
+      // Adapter le format de la conversation du store au format attendu par useConversations
+      const mappedConversation = {
+        // spread existing properties (id, title, etc.)
+        ...conversation,
+        // map folderId (camelCase) to folder_id (snake_case) expected by the hook
+        folder_id: (conversation as any).folderId ?? null,
+        // ensure created_at and updated_at exist (fall back to any available fields or current time)
+        created_at: (conversation as any).created_at ?? (conversation as any).createdAt ?? new Date().toISOString(),
+        updated_at: (conversation as any).updated_at ?? (conversation as any).updatedAt ?? new Date().toISOString(),
+        // map messages to the shape expected by useConversations (add created_at and conversation_id)
+        messages: (conversation as any).messages?.map((m: any) => ({
+          ...m,
+          created_at: m?.created_at ?? m?.createdAt ?? new Date().toISOString(),
+          conversation_id: m?.conversation_id ?? m?.conversationId ?? conversation.id,
+        })) ?? [],
+      };
+
+      selectConversation(mappedConversation);
+      setActiveFolderId(null);
+    }
+  };
+
   return (
     <div 
       draggable
@@ -79,7 +108,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({ conversation }) => 
           ? "bg-secondary text-primary" 
           : "hover:bg-secondary/80 cursor-pointer"
       )}
-      onClick={() => !isEditing && setActiveConversationId(conversation.id)}
+      onClick={handleConversationClick} // ✅ Remplacer par la nouvelle fonction
     >
       <div className="flex items-center flex-grow overflow-hidden">
         <MessageSquare className="w-4 h-4 mr-2 flex-shrink-0" />

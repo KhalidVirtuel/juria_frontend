@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { PlusCircle} from 'lucide-react';
 
 interface NewFolderDialogProps {
   open: boolean;
@@ -102,8 +103,8 @@ const NewFolderDialog: React.FC<NewFolderDialogProps> = ({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
-              Créer le dossier
+            <Button type="submit" disabled={!name.trim()} className="flex justify-start text-black bg-white hover:bg-blue-950  hover:text-white">
+               <PlusCircle className="h-4 w-4" /> Créer le dossier
             </Button>
           </DialogFooter>
         </form>

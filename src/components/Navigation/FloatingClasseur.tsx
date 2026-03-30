@@ -151,7 +151,8 @@ const FloatingClasseur: React.FC<FloatingClasseurProps> = ({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
+     {/*
+     <PopoverTrigger asChild>
         <button className={buttonClasses}>
           <div className="relative">
             {variant === 'topbar' ? (
@@ -170,6 +171,7 @@ const FloatingClasseur: React.FC<FloatingClasseurProps> = ({
           </div>
         </button>
       </PopoverTrigger>
+       */} 
       <PopoverContent 
         className="w-96 p-0" 
         align={variant === 'topbar' ? 'end' : 'start'}

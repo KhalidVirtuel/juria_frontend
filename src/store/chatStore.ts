@@ -1,16 +1,32 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ChatState } from './types';
 import { initializeStore, createBasicActions } from './storeInitialization';
-import { createConversationActions } from './conversationActions';
+import { createConversationActions, createWorkflowActions } from './conversationActions';
 import { createFolderActions } from './folderActions';
 import { createFolderEnhancedActions } from './folderEnhancedActions';
 
-// Export types
 export type { Message, Conversation, Folder } from './types';
 
-// Create the store with all actions
+// Nettoyage au démarrage
+if (typeof window !== 'undefined') {
+  const oldKeys = [
+    'law-assistant-storage',
+    'law-assistant-storage-v1',
+    'law-assistant-storage_2',
+    'law-assistant-storage_v2'
+  ];
+  
+  oldKeys.forEach(key => {
+    try {
+      localStorage.removeItem(key);
+      console.log(`🧹 Cache supprimé: ${key}`);
+    } catch (e) {
+      console.warn('Erreur suppression cache:', e);
+    }
+  });
+}
+
 export const useChatStore = create<ChatState>()(
   persist(
     (set, get) => ({
@@ -22,23 +38,21 @@ export const useChatStore = create<ChatState>()(
       isTyping: false,
       isLoading: false,
 
-      // Initialize all store data
       initialize: initializeStore(set, get),
-      
-      // Basic actions
       ...createBasicActions(set),
-      
-      // Conversation actions
       ...createConversationActions(set, get),
-      
-      // Folder actions
       ...createFolderActions(set),
-      
-      // Enhanced folder actions
       ...createFolderEnhancedActions(set, get),
-    }),
+      ...createWorkflowActions(set, get),
+    } as unknown as ChatState), // ✅ Cast ici pour éviter l'erreur TypeScript
     {
-      name: 'law-assistant-storage',
+      name: 'law-assistant-ui-prefs',
+      version: 1,
+      
+      partialize: (state) => ({
+        sidebarOpen: state.sidebarOpen,
+        activeFolderId: state.activeFolderId,
+      }),
     }
   )
 );

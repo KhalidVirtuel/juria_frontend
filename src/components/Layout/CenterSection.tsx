@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, FileText, Scale, Users, Calendar } from 'lucide-react';
+import { Search, Scale, Users, Calendar,Folder } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -15,8 +15,9 @@ const CenterSection: React.FC = () => {
           <Logo size="lg" className="h-16 mx-auto mb-4" />
         </div>
         <h1 className="text-5xl font-bold text-transparent bg-gradient-to-r from-blue-400 via-blue-500 to-purple-600 bg-clip-text mb-3">
-          Jure AI
+          Mizen
         </h1>
+         <span className="inline-block font-medium transition-all text-blue-850 duration-300 hover:scale-105" style={{ color: '#0187DA' }}>AI</span>
         <p className="text-xl text-white/70 font-light">
           Votre assistant juridique intelligent
         </p>
@@ -74,7 +75,7 @@ const CenterSection: React.FC = () => {
         <Card className="apple-card-hover hover:apple-glow transition-all duration-300 hover:scale-[1.02] border-white/20 bg-white/5 backdrop-blur-sm">
           <CardContent className="p-6 text-center">
             <div className="mb-3 flex justify-center">
-              <FileText className="h-8 w-8 text-blue-400" />
+              <Folder className="h-8 w-8 text-blue-400" />
             </div>
             <h3 className="font-semibold text-white mb-2">Rédaction Automatique</h3>
             <p className="text-sm text-white/70">Générez des documents juridiques en quelques clics</p>

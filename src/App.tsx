@@ -7,9 +7,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import TemplateAdminPage from './pages/TemplateAdminPage';
 
-// Supprimons le CSS par défaut qui n'est plus nécessaire
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,8 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/app" element={<Index />} />
+          <Route path="/app/profile" element={<Profile />} />
+          <Route path="/admin/templates" element={<TemplateAdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

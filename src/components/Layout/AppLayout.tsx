@@ -16,6 +16,14 @@ import ClientsSection from '../Sections/ClientsSection';
 import AnalyticsSection from '../Sections/AnalyticsSection';
 import AISection from '../Sections/AISection';
 import SettingsSection from '../Sections/SettingsSection';
+import WorkflowSection from '../Sections/WorkflowSection';
+import KnowledgeBaseSection from '../Sections/KnowledgeBaseSection';
+import KnowledgeBaseRag from '../Sections/KnowledgeBaseRag';
+
+import ProfileSection from '../Sections/ProfileSection';
+
+import DocumentViewerModal from '@/components/DocumentViewerModal';
+
 
 const AppLayout: React.FC = () => {
   const [activeSection, setActiveSection] = React.useState('chat');
@@ -29,7 +37,8 @@ const AppLayout: React.FC = () => {
       case 'chat':
         return (
           <div className="flex h-full">
-            <LeftSidebar />
+            {/* ✅ Passe toujours onSectionChange */}
+            <LeftSidebar onSectionChange={setActiveSection} />
             <main className="flex-1 overflow-hidden">
               {activeFolder ? (
                 <FolderDetailView
@@ -43,27 +52,110 @@ const AppLayout: React.FC = () => {
           </div>
         );
       case 'cases':
-        return <CasesSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <CasesSection />
+            </main>
+          </div>
+        );
       case 'calendar':
-        return <CalendarSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden border-l border-border">
+              <CalendarSection />
+            </main>
+          </div>
+        );
+      case 'workflow':
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden border-l border-border">
+              <WorkflowSection />
+            </main>
+          </div>
+        );
+      case 'knowledge':
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden border-l border-border">
+              <KnowledgeBaseRag />
+            </main>
+          </div>
+        );
       case 'billing':
-        return <BillingSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <BillingSection />
+            </main>
+          </div>
+        );
       case 'communication':
-        return <CommunicationSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <CommunicationSection />
+            </main>
+          </div>
+        );
       case 'documents':
-        return <DocumentsSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <DocumentsSection />
+            </main>
+          </div>
+        );
       case 'clients':
-        return <ClientsSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <ClientsSection />
+            </main>
+          </div>
+        );
       case 'analytics':
-        return <AnalyticsSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <AnalyticsSection />
+            </main>
+          </div>
+        );
       case 'ai':
-        return <AISection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <AISection />
+            </main>
+          </div>
+        );
       case 'settings':
-        return <SettingsSection />;
+        return (
+          <div className="flex h-full">
+            <LeftSidebar onSectionChange={setActiveSection} />
+            <main className="flex-1 overflow-hidden">
+              <SettingsSection />
+            </main>
+          </div>
+        );
+      case 'profile':
+        return <ProfileSection onBack={() => setActiveSection('chat')} />;
       default:
         return (
           <div className="flex h-full">
-            <LeftSidebar />
+            <LeftSidebar onSectionChange={setActiveSection} />
             <main className="flex-1 overflow-hidden">
               <ChatSection />
             </main>
@@ -73,20 +165,24 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-gradient-to-br from-background via-background to-secondary/30 text-foreground">
+    <div className="h-screen overflow-hidden  text-foreground">
       {/* Bouton Profil - fixé en haut à droite */}
       <Button
         variant="ghost"
         size="icon"
-        onClick={signOut}
-        className="fixed top-4 right-6 w-12 h-12 rounded-full border border-border shadow-apple-chrome z-50 transition"
-        style={{ backgroundColor: '#1e3a8a' }}
+        //onClick={signOut}
+        onClick={() => setActiveSection('profile')}
+        className="fixed top-4 w-12 h-12 rounded-full border border-border shadow-apple-chrome z-50 transition bg-mezin hover:bg-mezin/90"
+        style={{right: '60px' }}
       >
         <User className="h-5 w-5 text-white" />
       </Button>
       
       <FloatingClasseur activeSection={activeSection} onSectionChange={setActiveSection} />
       {renderActiveSection()}
+
+      <DocumentViewerModal />
+
     </div>
   );
 };

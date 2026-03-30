@@ -2,12 +2,47 @@ import { toast } from '@/hooks/use-toast';
 import { ChatState, Attachment, TimelineEntry, GeneratedDocument, Deadline } from './types';
 import { foldersAPI } from '@/lib/api';
 
-// Helper function to convert backend date strings to timestamps
-const toTimestamp = (dateStr: string): number => new Date(dateStr).getTime();
+// Helper function to convert backend date strings or numeric timestamps to timestamps
+const toTimestamp = (date: string | number): number =>
+  typeof date === 'number' ? date : new Date(date).getTime();
 
 export const createFolderEnhancedActions = (set: any, get: any) => ({
+
+  addAttachment: async (folderId: string, data: { name: string; type: any; url?: string; size?: number }) => {
+  const { attachment: a } = await foldersAPI.addAttachment(folderId, data);
+
+  // adapter au shape du store (uploadedAt: number)
+  const attForStore = {
+    id: String(a.id),
+    folderId: String(a.folderId),
+    name: a.name,
+    type: a.type, // déjà en minuscule par backend
+    url: a.url,
+    size: a.size ?? 0,
+    uploadedAt: new Date(a.uploadedAt).getTime(),
+  };
+
+  set((state: any) => ({
+    folders: state.folders.map((f: any) =>
+      f.id === String(folderId)
+        ? { ...f, attachments: [attForStore, ...(f.attachments || [])] }
+        : f
+    ),
+  }));
+    },
+
+    removeAttachment: async (folderId: string, attachmentId: string) => {
+      await foldersAPI.deleteAttachment(attachmentId);
+      set((state: any) => ({
+        folders: state.folders.map((f: any) =>
+          f.id === String(folderId)
+            ? { ...f, attachments: (f.attachments || []).filter((x: any) => x.id !== attachmentId) }
+            : f
+        ),
+      }));
+    },
   // Attachment actions
-  addAttachment: async (folderId: string, attachment: Omit<Attachment, 'id' | 'folderId' | 'uploadedAt'>): Promise<void> => {
+  uploadAttachment: async (folderId: string, attachment: Omit<Attachment, 'id' | 'folderId' | 'uploadedAt'>): Promise<void> => {
     try {
       // Call backend API
       const { attachment: newAttachment } = await foldersAPI.addAttachment(folderId, {
@@ -50,7 +85,7 @@ export const createFolderEnhancedActions = (set: any, get: any) => ({
       });
     }
   },
-
+/*
   removeAttachment: async (folderId: string, attachmentId: string): Promise<void> => {
     try {
       // Call backend API
@@ -78,52 +113,49 @@ export const createFolderEnhancedActions = (set: any, get: any) => ({
       });
     }
   },
-
+*/
   // Timeline actions
-  addTimelineEntry: async (folderId: string, entry: Omit<TimelineEntry, 'id' | 'folderId' | 'createdAt'>): Promise<void> => {
-    try {
-      // Call backend API
-      const { entry: newEntry } = await foldersAPI.addTimelineEntry(folderId, {
-        title: entry.title,
-        description: entry.description,
-        type: entry.type.toUpperCase(),
-        date: new Date(entry.date).toISOString(),
-      });
+// Remplacer l'action addTimelineEntry existante par :
 
-      // Convert to store format
-      const convertedEntry: TimelineEntry = {
-        id: newEntry.id,
-        title: newEntry.title,
-        description: newEntry.description,
-        type: newEntry.type.toLowerCase() as any,
-        date: toTimestamp(newEntry.date),
-        folderId: newEntry.folderId,
-        createdAt: toTimestamp(newEntry.createdAt),
-      };
+addTimelineEntry: async (folderId: string, entry: Omit<TimelineEntry, 'id' | 'folderId' | 'createdAt'>): Promise<void> => {
+  try {
+    const { entry: newEntry } = await foldersAPI.addTimelineEntry(folderId, {
+      title: entry.title,
+      description: entry.description,
+      type: (entry.type || 'EVENT').toLowerCase(),
+      date: new Date(entry.date).toISOString(),
+      showInCalendar: entry.showInCalendar ?? true, // ✅ AJOUTÉ
+    });
 
-      // Update local state
-      set((state: ChatState) => ({
-        folders: state.folders.map(folder =>
-          folder.id === folderId
-            ? { ...folder, timeline: [...folder.timeline, convertedEntry].sort((a, b) => b.date - a.date) }
-            : folder
-        ),
-      }));
+    const convertedEntry: TimelineEntry = {
+      id: newEntry.id,
+      title: newEntry.title,
+      description: newEntry.description,
+      type: newEntry.type.toLowerCase() as any,
+      date: toTimestamp(newEntry.date),
+      folderId: newEntry.folderId,
+      createdAt: toTimestamp(newEntry.createdAt),
+      showInCalendar: newEntry.showInCalendar ?? true, // ✅ AJOUTÉ
+    };
 
-      toast({
-        title: "Succès",
-        description: "Événement ajouté à la chronologie"
-      });
-    } catch (error: any) {
-      console.error('Error adding timeline entry:', error);
-      toast({
-        title: "Erreur",
-        description: error.response?.data?.error || "Erreur lors de l'ajout à la chronologie",
-        variant: "destructive"
-      });
-    }
-  },
+    set((state: ChatState) => ({
+      folders: state.folders.map(folder =>
+        folder.id === folderId
+          ? { ...folder, timeline: [...folder.timeline, convertedEntry].sort((a, b) => b.date - a.date) }
+          : folder
+      ),
+    }));
 
+    toast({ title: "Succès", description: "Événement ajouté à la chronologie" });
+  } catch (error: any) {
+    console.error('Error adding timeline entry:', error);
+    toast({
+      title: "Erreur",
+      description: error.response?.data?.error || "Erreur lors de l'ajout à la chronologie",
+      variant: "destructive"
+    });
+  }
+},
   updateTimelineEntry: async (folderId: string, entryId: string, updates: Partial<TimelineEntry>): Promise<void> => {
     try {
       // Update local state (backend doesn't have update endpoint yet)

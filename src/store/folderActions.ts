@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 import { ChatState, Folder } from './types';
 import { foldersAPI } from '@/lib/api';
@@ -30,6 +29,7 @@ const convertFolder = (folder: any): Folder => ({
     type: t.type.toLowerCase() as any,
     date: toTimestamp(t.date),
     folderId: t.folderId,
+    conversationId: t.conversationId || undefined, // ✅ AJOUTÉ
     createdAt: toTimestamp(t.createdAt),
   })),
   documents: (folder.documents || []).map((d: any) => ({
@@ -116,6 +116,33 @@ export const createFolderActions = (set: any) => ({
     }
   },
 
+  // ✅ Recharger un dossier depuis l'API
+  loadFolder: async (folderId: string): Promise<Folder> => {
+    console.log('🔍 [STORE] Loading folder:', folderId);
+    
+    try {
+      // Utiliser foldersAPI pour récupérer le dossier
+      const { folder } = await foldersAPI.getById(folderId);
+      
+      // ✅ IMPORTANT : Convertir le dossier avec convertFolder
+      const convertedFolder = convertFolder(folder);
+      
+      console.log('✅ [STORE] Folder loaded:', convertedFolder.name);
+      
+      // Mettre à jour le dossier dans le state
+      set((state: ChatState) => ({
+        folders: state.folders.map(f => 
+          f.id === folderId ? convertedFolder : f
+        )
+      }));
+      
+      return convertedFolder;
+    } catch (error) {
+      console.error('❌ [STORE] Error loading folder:', error);
+      throw error;
+    }
+  },
+
   deleteFolder: async (id: string): Promise<void> => {
     try {
       // Delete from backend
@@ -150,4 +177,4 @@ export const createFolderActions = (set: any) => ({
       });
     }
   },
-});
+}); 

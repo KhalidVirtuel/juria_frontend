@@ -3,130 +3,202 @@
 @tailwind utilities;
 
 @layer base {
-  /* Shiny Chrome/Metallic Design System */
+  /* Brand Design System - Bleu principal #003878, Bleu secondaire #0187DA, Blanc pur */
   :root {
-    /* Premium Chrome & Metallic palette */
-    --background: 0 0% 100%;        /* Clean white background */
-    --foreground: 0 0% 6%;          /* Deep black for contrast */
+    /* Base colors */
+    --background: 0 0% 100%;        /* Blanc pur */
+    --foreground: 209 100% 23.5%;   /* Bleu principal pour le texte */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 6%;
+    --card-foreground: 209 100% 23.5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 6%;
-    --primary: 0 0% 76%;            /* Chrome silver C0C0C0 */
-    --primary-foreground: 0 0% 6%;  /* Deep black text */
-    --secondary: 0 0% 88%;          /* Light chrome E0E0E0 */
-    --secondary-foreground: 0 0% 6%;
-    --muted: 0 0% 92%;              /* Very light chrome */
-    --muted-foreground: 0 0% 45%;   /* Medium gray */
-    --accent: 219 84% 21%;              /* Bleu marine accent */
-    --accent-foreground: 0 0% 100%; /* White on navy blue */
+    --popover-foreground: 209 100% 23.5%;
+    
+    /* Brand colors */
+    --primary: 209 100% 23.5%;           /* Bleu principal #003878 */
+    --primary-foreground: 0 0% 100%;     /* Blanc sur bleu */
+    --secondary: 198 100% 43.1%;         /* Bleu secondaire #0187DA */
+    --secondary-foreground: 0 0% 100%;   /* Blanc sur bleu */
+    
+    --muted: 209 50% 95%;               /* Bleu très clair */
+    --muted-foreground: 209 100% 23.5%; /* Bleu principal */
+    --accent: 198 100% 43.1%;           /* Bleu secondaire */
+    --accent-foreground: 0 0% 100%;     /* Blanc */
+    
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 88%;             /* Light chrome border */
-    --input: 0 0% 96%;              /* Very light input bg */
-    --ring: 210 20% 50%;            /* Blue-gray for focus */
+    --destructive-foreground: 0 0% 100%;
+    --border: 209 50% 90%;              /* Bleu clair pour bordures */
+    --input: 0 0% 100%;                 /* Blanc pour inputs */
+    --ring: 209 100% 23.5%;             /* Bleu principal pour focus */
     --success: 142 76% 36%;
     --warning: 38 92% 50%;
     
-    /* Chrome Glassmorphism with Metallic Shine */
-    --glass: 0 0% 100% / 0.7;              /* Translucent white glassmorphism */
-    --glass-border: 0 0% 88% / 0.5;        /* Chrome border */
-    --background-glass: 0 0% 100% / 0.85;  /* Clean glass background */
-    --background-blur: 0 0% 96% / 0.9;     /* Subtle glass blur */
-    --primary-glass: 0 0% 76% / 0.3;       /* Chrome silver glass */
-    --primary-glow: 210 20% 50% / 0.4;     /* Blue-gray glow */
-    --secondary-glass: 0 0% 90% / 0.6;     /* Light chrome glass */
-    --accent-glass: 219 84% 21% / 0.8;         /* Navy blue glass */
-    --card-glass: 0 0% 100% / 0.9;         /* Card glass */
-    --card-border: 0 0% 88% / 0.4;         /* Chrome card border */
+    /* Custom brand colors */
+    --brand-primary: 209 100% 23.5%;      /* Bleu principal #003878 */
+    --brand-secondary: 198 100% 43.1%;    /* Bleu secondaire #0187DA */
+    --brand-white: 0 0% 100%;             /* Blanc pur */
     
-    /* Chrome color palette */
-    --chrome-50: 0 0% 98%;    /* Lightest chrome */
-    --chrome-100: 0 0% 96%;   /* Very light chrome */
-    --chrome-200: 0 0% 92%;   /* Light chrome */
-    --chrome-300: 0 0% 88%;   /* Medium light chrome */
-    --chrome-400: 0 0% 76%;   /* Medium chrome (C0C0C0) */
-    --chrome-500: 0 0% 64%;   /* Dark chrome */
-    --chrome-600: 0 0% 52%;   /* Darker chrome */
-    --chrome-700: 0 0% 40%;   /* Very dark chrome */
-    --chrome-800: 0 0% 25%;   /* Near black chrome */
-    --chrome-900: 219 84% 21%;    /* Navy blue instead of deep black */
+    /* Glass effects with brand colors */
+    --glass: 0 0% 100% / 0.7;
+    --glass-border: 209 50% 90% / 0.5;
+    --background-glass: 0 0% 100% / 0.85;
+    --background-blur: 209 50% 98% / 0.9;
+    --primary-glass: 209 100% 23.5% / 0.1;
+    --primary-glow: 198 100% 43.1% / 0.4;
+    --secondary-glass: 198 100% 43.1% / 0.1;
+    --accent-glass: 198 100% 43.1% / 0.8;
+    --card-glass: 0 0% 100% / 0.9;
+    --card-border: 209 50% 90% / 0.4;
     
-    /* Blue-gray accents */
-    --blue-gray: 210 20% 50%;     /* Blue-gray from image */
-    --blue-gray-glow: 210 20% 50% / 0.3;
+    /* Brand color palette */
+    --blue-50: 209 100% 98%;
+    --blue-100: 209 100% 95%;
+    --blue-200: 209 100% 90%;
+    --blue-300: 209 100% 80%;
+    --blue-400: 198 100% 43.1%;     /* Bleu secondaire */
+    --blue-500: 209 100% 23.5%;     /* Bleu principal */
+    --blue-600: 209 100% 20%;
+    --blue-700: 209 100% 15%;
+    --blue-800: 209 100% 10%;
+    --blue-900: 209 100% 8%;
     
-    /* Premium metallic shadows */
-    --shadow-chrome-sm: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    --shadow-chrome-md: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-    --shadow-chrome-lg: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 0 rgba(0, 0, 0, 0.15);
-    --shadow-chrome-xl: 0 16px 40px rgba(0, 0, 0, 0.25), inset 0 3px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    /* Premium shadows with brand colors */
+    --shadow-primary-sm: 0 1px 3px rgba(0, 56, 120, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --shadow-primary-md: 0 4px 12px rgba(0, 56, 120, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    --shadow-primary-lg: 0 8px 24px rgba(0, 56, 120, 0.2), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+    --shadow-primary-xl: 0 16px 40px rgba(0, 56, 120, 0.25);
   }
 
-  /* Chrome Metallic Design System */
+  /* Brand surfaces and effects */
   :root {
-    /* Chrome Glassmorphism surfaces */
-    --background-glass: 0 0% 100% / 0.85;    /* Clean glass background */
-    --background-blur: 0 0% 96% / 0.9;       /* Subtle glass blur */
+    /* Glass surfaces */
+    --background-glass: 0 0% 100% / 0.85;
+    --background-blur: 209 50% 98% / 0.9;
 
-    /* Premium chrome surfaces */
-    --card-glass: 0 0% 100% / 0.9;           /* Glass card */
-    --card-metal: 0 0% 88% / 0.8;            /* Chrome metal card */
-    --card-border: 0 0% 76% / 0.3;           /* Chrome border */
+    /* Premium surfaces */
+    --card-glass: 0 0% 100% / 0.9;
+    --card-metal: 209 100% 95% / 0.8;
+    --card-border: 209 50% 90% / 0.3;
 
-    /* Premium chrome surfaces */
-    --surface-glass: 0 0% 100% / 0.7;        /* Glass surface */
-    --surface-metal: 0 0% 88% / 0.9;         /* Chrome metal surface */
-    --surface-chrome: 0 0% 76% / 0.95;       /* Chrome surface */
+    /* Brand surfaces */
+    --surface-glass: 0 0% 100% / 0.7;
+    --surface-metal: 209 100% 95% / 0.9;
+    --surface-primary: 209 100% 23.5% / 0.95;
 
-    /* 3D Chrome shadows */
-    --shadow-glass: var(--shadow-chrome-md);
-    --shadow-metal: var(--shadow-chrome-lg);
-    --shadow-chrome: var(--shadow-chrome-sm);
-    --shadow-floating: var(--shadow-chrome-xl);
+    /* Shadows */
+    --shadow-glass: var(--shadow-primary-md);
+    --shadow-metal: var(--shadow-primary-lg);
+    --shadow-primary: var(--shadow-primary-sm);
+    --shadow-floating: var(--shadow-primary-xl);
 
-    /* Chrome gradients */
+    /* Brand gradients */
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
-    --gradient-metal: linear-gradient(135deg, hsl(0 0% 88%) 0%, hsl(0 0% 76%) 50%, hsl(0 0% 88%) 100%);
-    --gradient-chrome: linear-gradient(135deg, hsl(0 0% 92%) 0%, hsl(0 0% 76%) 30%, hsl(0 0% 88%) 70%, hsl(0 0% 92%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(209 100% 23.5%) 0%, hsl(209 100% 20%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(198 100% 43.1%) 0%, hsl(198 100% 38%) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(209 100% 23.5%) 0%, hsl(198 100% 43.1%) 100%);
   }
 
   .dark {
-    /* Dark glassmorphism */
-    --background: 220 27% 8%;
-    --background-glass: 220 27% 8% / 0.85;
-    --background-blur: 220 27% 6% / 0.7;
-    --foreground: 220 9% 98%;
+    /* Dark mode with brand colors */
+    --background: 209 100% 8%;
+    --background-glass: 209 100% 8% / 0.85;
+    --background-blur: 209 100% 6% / 0.7;
+    --foreground: 0 0% 98%;
 
-    --card: 220 27% 12% / 0.9;
-    --card-glass: 220 27% 12% / 0.6;
-    --card-metal: 220 27% 16% / 0.85;
-    --card-foreground: 220 9% 98%;
-    --card-border: 220 27% 100% / 0.15;
+    --card: 209 100% 12% / 0.9;
+    --card-glass: 209 100% 12% / 0.6;
+    --card-metal: 209 100% 16% / 0.85;
+    --card-foreground: 0 0% 98%;
+    --card-border: 198 100% 43.1% / 0.15;
 
-    --surface-glass: 220 27% 12% / 0.4;
-    --surface-metal: 220 27% 18% / 0.9;
-    --surface-chrome: 220 27% 22% / 0.95;
+    --surface-glass: 209 100% 12% / 0.4;
+    --surface-metal: 209 100% 18% / 0.9;
+    --surface-primary: 209 100% 23.5% / 0.95;
 
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-    --shadow-metal: 0 4px 24px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-    --shadow-chrome: 0 1px 3px 0 rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    --shadow-floating: 0 20px 40px -8px rgba(0, 0, 0, 0.6);
+    --shadow-glass: 0 8px 32px 0 rgba(0, 56, 120, 0.5);
+    --shadow-metal: 0 4px 24px 0 rgba(0, 56, 120, 0.3), inset 0 1px 0 0 rgba(1, 135, 218, 0.1);
+    --shadow-primary: 0 1px 3px 0 rgba(0, 56, 120, 0.3);
+    --shadow-floating: 0 20px 40px -8px rgba(0, 56, 120, 0.6);
 
-    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-    --gradient-metal: linear-gradient(135deg, rgba(51, 65, 85, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
-    --gradient-chrome: linear-gradient(135deg, rgba(71, 85, 105, 0.9) 0%, rgba(51, 65, 85, 0.85) 50%, rgba(30, 41, 59, 0.9) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(1, 135, 218, 0.15) 0%, rgba(1, 135, 218, 0.05) 100%);
+    --gradient-primary: linear-gradient(135deg, rgba(0, 56, 120, 0.9) 0%, rgba(0, 56, 120, 0.8) 100%);
+    --gradient-secondary: linear-gradient(135deg, rgba(1, 135, 218, 0.9) 0%, rgba(1, 135, 218, 0.85) 50%, rgba(0, 56, 120, 0.9) 100%);
   }
 }
 
 @layer base {
-  /* Apple-style Component Classes */
+  /* Typography Onest avec letter-spacing -4% */
+  * {
+    font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.04em;
+  }
+  
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.04em;
     font-feature-settings: 'cv11', 'ss01';
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-size: 17px; /* Increased base font size */
+  }
+  
+  /* Increased font sizes globally */
+  p, span, div {
+    @apply text-base;
+  }
+  
+  small, .text-xs {
+    font-size: 0.8125rem !important; /* 13px */
+  }
+  
+  .text-sm {
+    font-size: 0.9375rem !important; /* 15px */
+  }
+  
+  .text-base {
+    font-size: 1.0625rem !important; /* 17px */
+  }
+  
+  .text-lg {
+    font-size: 1.1875rem !important; /* 19px */
+  }
+  
+  .text-xl {
+    font-size: 1.3125rem !important; /* 21px */
+  }
+  
+  .text-2xl {
+    font-size: 1.5625rem !important; /* 25px */
+  }
+  
+  .text-3xl {
+    font-size: 1.9375rem; /* 31px - removed !important */
+  }
+  
+  .text-4xl {
+    font-size: 2.3125rem; /* 37px - removed !important */
+  }
+  
+  /* Removed h1 rule to allow custom sizing */
+  
+  h2 {
+    font-size: 2rem !important; /* 32px */
+  }
+  
+  h3 {
+    font-size: 1.625rem !important; /* 26px */
+  }
+  
+  h4 {
+    font-size: 1.375rem !important; /* 22px */
+  }
+  
+  h5 {
+    font-size: 1.1875rem !important; /* 19px */
+  }
+  
+  h6 {
+    font-size: 1.0625rem !important; /* 17px */
   }
   
   /* Premium glass card effects */
@@ -143,8 +215,8 @@
   /* Premium Typography */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-    letter-spacing: -0.025em;
+    font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    letter-spacing: -0.04em;
   }
   
   /* Apple-inspired Glass Effects */
@@ -226,6 +298,16 @@
   background-color: rgba(155, 155, 155, 0.7);
 }
 
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+
 /* Global rounded corners override - NO sharp edges! */
 * {
   border-radius: inherit;
@@ -275,19 +357,18 @@
   }
 
   .apple-navigation-panel {
-    @apply apple-chrome rounded-2xl;
+    @apply rounded-2xl;
     backdrop-filter: blur(20px) saturate(180%);
+    background: var(--gradient-brand);
   }
 
   .apple-chat-bubble-user {
-    @apply apple-chrome text-foreground;
+    @apply text-primary-foreground;
     border-radius: 1.5rem 1.5rem 0.5rem 1.5rem;
-    background: linear-gradient(135deg, 
-      hsl(0 0% 76% / 0.9) 0%, 
-      hsl(0 0% 64% / 0.8) 100%);
-    color: hsl(0 0% 6%);  /* Deep black text */
+    background: var(--gradient-secondary);
+    color: hsl(var(--brand-white));
     box-shadow: 
-      0 4px 12px 0 hsl(0 0% 64% / 0.3),
+      0 4px 12px 0 hsl(198 100% 43.1% / 0.3),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
   }
 
@@ -299,17 +380,18 @@
 
   /* Enhanced input fields */
   .apple-input {
-    @apply apple-chrome;
-    border-radius: 12px;
+    @apply rounded-xl;
+    background: hsl(var(--input));
+    border: 1px solid hsl(var(--border));
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .apple-input:focus {
     outline: none;
-    border-color: hsl(210 20% 50% / 0.5);   /* Blue-gray focus */
+    border-color: hsl(var(--brand-primary));
     box-shadow: 
-      0 0 0 3px hsl(210 20% 50% / 0.1),
-      var(--shadow-chrome);
+      0 0 0 3px hsl(var(--brand-primary) / 0.1),
+      var(--shadow-primary);
   }
 
   /* Premium scrollbar */
@@ -382,7 +464,7 @@
   }
 
   .apple-glow-subtle {
-    filter: drop-shadow(0 0 20px hsl(210 20% 50% / 0.3));   /* Blue-gray glow */
+    filter: drop-shadow(0 0 20px hsl(198 100% 43.1% / 0.3));
   }
 
   /* Premium Liquid Glass Effect */
@@ -404,7 +486,7 @@
       0 1px 0 rgba(255, 255, 255, 0.4);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-
+/*
   .liquid-glass-container:hover {
     transform: translateY(-1px);
     box-shadow: 
@@ -415,14 +497,14 @@
   }
 
   .liquid-glass-container:focus-within {
-    border-color: hsla(var(--primary), 0.4);
+    border-color: hsla(var(--brand-primary), 0.4);
     box-shadow: 
-      0 0 0 4px hsla(var(--primary), 0.1),
-      0 12px 40px rgba(0, 0, 0, 0.15),
+      0 0 0 4px hsla(var(--brand-primary), 0.1),
+      0 12px 40px rgba(0, 56, 120, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
       inset 0 -1px 0 rgba(255, 255, 255, 0.3);
   }
-
+*/
   /* Liquid Glass Button - Exact Apple Style */
   .liquid-glass-btn {
     position: relative;
@@ -554,4 +636,25 @@
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
+}
+
+.text-mezin-ciel
+{
+  color: #0187DA ;
+}
+
+.text-mezin
+{
+  color: #003878 ;
+}
+
+
+.bg-mezin-ciel
+{
+  background-color: #0187DA ;
+}
+
+.bg-mezin, .bg-blue-950
+{
+  background-color: #003878 ;
 }
